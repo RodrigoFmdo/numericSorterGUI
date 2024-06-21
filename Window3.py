@@ -5,10 +5,12 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication
 from PyQt6.QtCore import Qt
 
 class Window3(QWidget):
-    def __init__(self, tiempos_secuencial, tiempos_paralelo):
+    def __init__(self, tiempos_secuencial, tiempos_paralelo, tqs,tqp):
         super().__init__()
         self.tiempos_secuencial = tiempos_secuencial
         self.tiempos_paralelo = tiempos_paralelo
+        self.tqs = tqs
+        self.tqp = tqp
         
         self.setWindowTitle('Window 3')
         self.resize(1000, 700)
@@ -17,7 +19,7 @@ class Window3(QWidget):
         layout = QVBoxLayout()
 
         # Download Button 
-        self.downloadButton = QPushButton('Download as CSV')
+        self.downloadButton = QPushButton('Download timetable as CSV')
         self.downloadButton.setFixedSize(200, 50)
         self.downloadButton.clicked.connect(self.downloadButtonClick)
         
@@ -35,14 +37,28 @@ class Window3(QWidget):
         print(self.tiempos_secuencial)
         print('parallell')
         print(self.tiempos_paralelo)
+        print('quick sec')
+        print(self.tqs)
+        print("quick parallell")
+        print(self.tqp)
 
     def plotData(self):
         # Clear previous plots
         self.plotWidget.clear()
+        if hasattr(self, 'legend'):
+            self.legend.scene().removeItem(self.legend)
+        legend = self.plotWidget.addLegend()
 
         # Plot data using PyQtGraph
-        self.plotWidget.plot(self.tiempos_secuencial, pen='b', name='Secuential')
-        self.plotWidget.plot(self.tiempos_paralelo, pen='r', name='Parallel')
+        l1 =self.plotWidget.plot(self.tiempos_secuencial, pen='b', name='Merge Secuential')
+        l2 = self.plotWidget.plot(self.tiempos_paralelo, pen='r', name='Merge Parallel')
+        l3 = self.plotWidget.plot(self.tqs, pen='g', name='Quick Secuential')
+        l4 = self.plotWidget.plot(self.tqp, pen='y', name='Quick Parallel')
+
+        legend.addItem(l1, 'Merge Sequential')
+        legend.addItem(l2, 'Merge Parallel')
+        legend.addItem(l3, 'Quick Sequential')
+        legend.addItem(l4, 'Quick Parallel')
 
         # Set labels and title
         self.plotWidget.setLabel('left', 'Time (ms)')
@@ -55,9 +71,9 @@ class Window3(QWidget):
         try:
             with open(filename, mode='w', newline='') as file:
                 writer = csv.writer(file)
-                writer.writerow(['Secuential', 'Parallel'])
-                for seq, par in zip(self.tiempos_secuencial, self.tiempos_paralelo):
-                    writer.writerow([seq, par])
+                writer.writerow(['Merge Secuential', 'Merge Parallel', 'Quick Secuential','Quick Parallell'] )
+                for merseq, merpar, quickseq, quickpar in zip(self.tiempos_secuencial, self.tiempos_paralelo,self.tqs,self.tqp):
+                    writer.writerow([merseq, merpar, quickseq, quickpar])
             print(f"CSV file '{filename}' written successfully.")
 
         except IOError as e:

@@ -95,13 +95,13 @@ class Window1(QWidget):
                          lector = csv.reader(csvfile)
                          for fila in lector:
                              self.lista.append(fila[0])
-                             
+
                 elif path.endswith('.xlsx'):
                     self.df = pd.read_excel(path)
                 else:
                     raise ValueError("Selected file is not an XLSX or a CSV.")
                 
-                preview_text = self.df.head().to_string(index=False)
+                preview_text = self.df.head(100).to_string(index=False)
                 self.previewDialog.setPlainText(preview_text)
                 self.log.setText("File Loaded Succesfully. Please press Validate, or Sort button.")
             
